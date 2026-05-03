@@ -491,6 +491,7 @@ h1#main-title span {
     align-items: center;
     justify-content: center;
     padding: 2rem;
+    overflow-y: auto; /* Enable scrolling for the modal container */
 }
 
 .modal.active {
@@ -509,12 +510,32 @@ h1#main-title span {
     background: #14152a;
     width: 100%;
     max-width: 800px;
+    max-height: calc(100vh - 4rem);
     border-radius: 40px;
     position: relative;
     z-index: 1001;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Changed to hidden here, scroll will be on #modal-body */
     border: 1px solid var(--glass-border);
     animation: zoomIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#modal-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
+}
+
+#modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+#modal-body::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 10px;
 }
 
 .close-modal {
@@ -713,6 +734,32 @@ h1#main-title span {
 
     .detail-info {
         grid-template-columns: 1fr;
+        padding: 2rem;
+        gap: 1.5rem;
+    }
+    
+    .detail-header {
+        padding: 2rem;
+    }
+
+    .detail-img {
+        width: 180px;
+        height: 180px;
+    }
+
+    .modal {
+        padding: 1rem;
+    }
+
+    .modal-content {
+        max-height: calc(100vh - 2rem);
+        border-radius: 30px;
+    }
+
+    .close-modal {
+        top: 1rem;
+        right: 1rem;
+        font-size: 2rem;
     }
     
     h1#main-title {
