@@ -569,9 +569,12 @@ h1#main-title span {
     
     .search-wrapper {
         max-width: none;
+        width: 100%;
     }
     
-    .btn-secondary {
+    .btn-secondary,
+    .filter-controls {
+        width: 100%;
         justify-content: center;
     }
 
