@@ -574,7 +574,8 @@ h1#main-title span {
     
     .btn-secondary,
     .filter-controls {
-        width: 100%;
+        width: 100% !important;
+        flex: 1;
         justify-content: center;
     }
 
