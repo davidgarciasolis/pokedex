@@ -22,17 +22,26 @@
                 <p class="subtitle">Explora el ecosistema Pokémon</p>
             </div>
             
-            <div class="search-container">
-                <div class="search-wrapper">
-                    <input type="text" id="pokemon-search" placeholder="Buscar Pokémon por nombre o ID..." autocomplete="off">
-                    <span class="search-icon">🔍</span>
+            <div class="controls-container">
+                <div class="controls-wrapper">
+                    <div class="search-wrapper">
+                        <input type="text" id="pokemon-search" placeholder="Buscar Pokémon por nombre o ID..." autocomplete="off">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    
+                    <div class="filter-controls">
+                        <button id="filter-toggle" class="btn-secondary">
+                            <span class="icon">🏷️</span> <span class="btn-text">Tipos</span> <span class="arrow">▼</span>
+                        </button>
+                        <div id="active-filters-count" class="badge-count" style="display: none;">0</div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="filters-section">
-                <div id="type-filters" class="type-chips">
-                    <!-- Types will be injected here -->
-                    <button class="type-chip active" data-type="all">Todos</button>
+
+                <div id="type-filters-container" class="type-filters-wrapper">
+                    <div id="type-filters" class="type-chips">
+                        <!-- Types will be injected here -->
+                        <button class="type-chip active" data-type="all">Todos</button>
+                    </div>
                 </div>
             </div>
         </header>
