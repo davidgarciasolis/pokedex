@@ -29,11 +29,24 @@
                         <span class="search-icon">🔍</span>
                     </div>
                     
-                    <div class="filter-controls">
-                        <button id="filter-toggle" class="btn-secondary">
-                            <span class="icon">🏷️</span> <span class="btn-text">Tipos</span> <span class="arrow">▼</span>
-                        </button>
-                        <div id="active-filters-count" class="badge-count" style="display: none;">0</div>
+                    <div class="filters-row">
+                        <div class="filter-controls">
+                            <button id="filter-toggle" class="btn-secondary">
+                                <span class="icon">🏷️</span> <span class="btn-text">Tipos</span> <span class="arrow">▼</span>
+                                <div id="active-filters-count" class="badge-count" style="display: none;">0</div>
+                            </button>
+                        </div>
+
+                        <div class="limit-controls">
+                            <div class="limit-dropdown">
+                                <button id="limit-dropdown-toggle" class="limit-btn">25</button>
+                                <div id="limit-options-menu" class="limit-menu">
+                                    <button class="limit-option active" data-limit="25">25</button>
+                                    <button class="limit-option" data-limit="50">50</button>
+                                    <button class="limit-option" data-limit="100">100</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

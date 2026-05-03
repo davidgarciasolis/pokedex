@@ -1,5 +1,5 @@
 const POKE_API_BASE = 'https://pokeapi.co/api/v2/';
-const INITIAL_LIMIT = 20;
+let currentLimit = 25;
 // State
 let offset = 0;
 let currentPokemonList = [];
@@ -159,7 +159,7 @@ async function applyFilters() {
 
 async function fetchFilteredPokemonPage() {
     showLoader();
-    const page = filteredPokemonList.slice(filteredOffset, filteredOffset + INITIAL_LIMIT);
+    const page = filteredPokemonList.slice(filteredOffset, filteredOffset + currentLimit);
     
     try {
         const detailedPokemon = await Promise.all(
@@ -170,7 +170,7 @@ async function fetchFilteredPokemonPage() {
         );
         
         renderPokemon(detailedPokemon);
-        filteredOffset += INITIAL_LIMIT;
+        filteredOffset += currentLimit;
         
         if (filteredOffset >= filteredPokemonList.length) {
             loadMoreBtn.style.display = 'none';
@@ -189,7 +189,7 @@ async function fetchPokemon(isSearching = false) {
     if (!isSearching) {
         showLoader();
         try {
-            const response = await fetch(`${POKE_API_BASE}pokemon?limit=${INITIAL_LIMIT}&offset=${offset}`);
+            const response = await fetch(`${POKE_API_BASE}pokemon?limit=${currentLimit}&offset=${offset}`);
             const data = await response.json();
             
             const detailedPokemon = await Promise.all(
@@ -201,7 +201,7 @@ async function fetchPokemon(isSearching = false) {
             
             currentPokemonList = [...currentPokemonList, ...detailedPokemon];
             renderPokemon(detailedPokemon);
-            offset += INITIAL_LIMIT;
+            offset += currentLimit;
         } catch (error) {
             console.error('Error fetching pokemon:', error);
         } finally {
@@ -315,6 +315,53 @@ function setupEventListeners() {
             handleSearch(query);
         }, 500);
     });
+
+    // Limit dropdown logic
+    const limitBtn = document.getElementById('limit-dropdown-toggle');
+    const limitMenu = document.getElementById('limit-options-menu');
+    const limitOptions = document.querySelectorAll('.limit-option');
+
+    if (limitBtn && limitMenu) {
+        limitBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            limitMenu.classList.toggle('show');
+        });
+
+        limitOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                currentLimit = parseInt(option.dataset.limit);
+                limitBtn.textContent = currentLimit;
+                
+                limitOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                
+                limitMenu.classList.remove('show');
+                resetView();
+            });
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            limitMenu.classList.remove('show');
+        });
+    }
+}
+
+function resetView() {
+    // Reset all state for reloading
+    offset = 0;
+    filteredOffset = 0;
+    searchOffset = 0;
+    currentPokemonList = [];
+    pokemonGrid.innerHTML = '';
+    
+    if (isSearchMode) {
+        handleSearch(searchInput.value.toLowerCase().trim());
+    } else if (isFilteredMode) {
+        applyFilters();
+    } else {
+        fetchPokemon();
+    }
 }
 
 // Search Logic
@@ -356,7 +403,7 @@ async function handleSearch(query) {
 
 async function fetchSearchPokemonPage() {
     showLoader();
-    const page = searchResults.slice(searchOffset, searchOffset + INITIAL_LIMIT);
+    const page = searchResults.slice(searchOffset, searchOffset + currentLimit);
     
     try {
         const detailedPokemon = await Promise.all(
@@ -367,7 +414,7 @@ async function fetchSearchPokemonPage() {
         );
         
         renderPokemon(detailedPokemon);
-        searchOffset += INITIAL_LIMIT;
+        searchOffset += currentLimit;
         
         if (searchOffset >= searchResults.length) {
             loadMoreBtn.style.display = 'none';
