@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PokéDex Ultimate - Descubre el Mundo Pokémon</title>
+    <meta name="description" content="Explora la PokéDex definitiva. Información detallada sobre todos tus Pokémon favoritos con datos en tiempo real de PokeAPI.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo-section">
+                <h1 id="main-title">Poké<span>Dex</span></h1>
+                <p class="subtitle">Explora el ecosistema Pokémon</p>
+            </div>
+            
+            <div class="search-container">
+                <div class="search-wrapper">
+                    <input type="text" id="pokemon-search" placeholder="Buscar Pokémon por nombre o ID..." autocomplete="off">
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
+            
+            <div class="filters-section">
+                <div id="type-filters" class="type-chips">
+                    <!-- Types will be injected here -->
+                    <button class="type-chip active" data-type="all">Todos</button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div id="pokemon-grid" class="pokemon-grid">
+                <!-- Pokemon cards will be injected here -->
+                <div class="loader-container">
+                    <div class="loader"></div>
+                </div>
+            </div>
+            
+            <div class="pagination-container">
+                <button id="load-more" class="btn-primary">Cargar más Pokémon</button>
+            </div>
+        </main>
+
+        <!-- Pokemon Detail Modal -->
+        <div id="pokemon-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <button class="close-modal">&times;</button>
+                <div id="modal-body">
+                    <!-- Content injected via JS -->
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 PokéDex Ultimate. Datos proporcionados por <a href="https://pokeapi.co/" target="_blank">PokeAPI</a>.</p>
+        </footer>
+    </div>
+
+    <!-- JS -->
+    <script src="script.js"></script>
+</body>
+</html>
