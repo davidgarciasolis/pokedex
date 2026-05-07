@@ -275,8 +275,8 @@ h1#main-title span {
 }
 
 .limit-btn {
-    background: var(--bg-card);
-    border: 1px solid var(--glass-border);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: var(--text-primary);
     width: 72px;
     height: 56px;
@@ -289,10 +289,18 @@ h1#main-title span {
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(10px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
-.limit-btn:hover, .btn-secondary:hover {
+.limit-btn:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px var(--accent-glow);
+    color: white;
+}
+
+.btn-secondary:hover {
     background: rgba(255, 255, 255, 0.08);
     border-color: rgba(255, 255, 255, 0.3);
     transform: translateY(-2px);
@@ -347,12 +355,14 @@ h1#main-title span {
 .limit-option:hover {
     background: rgba(255, 255, 255, 0.08);
     color: white;
+    transform: scale(1.05);
 }
 
 .limit-option.active {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--accent);
     color: white;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: none;
+    box-shadow: 0 5px 15px var(--accent-glow);
 }
 
 .badge-count {
