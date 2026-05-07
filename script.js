@@ -231,53 +231,262 @@ function renderPokemon(pokemonList) {
 }
 
 // Show Detail Modal
+// Fetch Species Data (Flavor Text, Genus, Evolution Chain Link)
+async function fetchSpeciesData(id) {
+    try {
+        const response = await fetch(`${POKE_API_BASE}pokemon-species/${id}`);
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching species data:', error);
+        return null;
+    }
+}
+
+// Fetch Evolution Chain
+async function fetchEvolutionChain(url) {
+    try {
+        const response = await fetch(url);
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching evolution chain:', error);
+        return null;
+    }
+}
+
+// Get Evolution Data Recursively
+function getEvolutionData(evolution) {
+    const evolutions = [];
+    let current = evolution.chain;
+
+    function extractEvolutions(node) {
+        const speciesName = node.species.name;
+        const speciesId = node.species.url.split('/').filter(Boolean).pop();
+        
+        evolutions.push({
+            name: speciesName,
+            id: speciesId,
+            sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${speciesId}.png`
+        });
+
+        if (node.evolves_to.length > 0) {
+            node.evolves_to.forEach(nextEvolution => extractEvolutions(nextEvolution));
+        }
+    }
+
+    extractEvolutions(current);
+    return evolutions;
+}
+
+// Fetch Type Effectiveness
+async function fetchTypeEffectiveness(types) {
+    const effectiveness = {};
+    const typePromises = types.map(t => fetch(t.type.url).then(res => res.json()));
+    const typesData = await Promise.all(typePromises);
+
+    typesData.forEach(typeData => {
+        typeData.damage_relations.double_damage_from.forEach(t => {
+            effectiveness[t.name] = (effectiveness[t.name] || 1) * 2;
+        });
+        typeData.damage_relations.half_damage_from.forEach(t => {
+            effectiveness[t.name] = (effectiveness[t.name] || 1) * 0.5;
+        });
+        typeData.damage_relations.no_damage_from.forEach(t => {
+            effectiveness[t.name] = (effectiveness[t.name] || 1) * 0;
+        });
+    });
+
+    // Remove neutral ones (1.0)
+    Object.keys(effectiveness).forEach(key => {
+        if (effectiveness[key] === 1.0) delete effectiveness[key];
+    });
+
+    return effectiveness;
+}
+
+// Show Detail Modal
 async function showPokemonDetail(pokemon) {
-    modalBody.innerHTML = `
-        <div class="detail-header" style="background: linear-gradient(135deg, var(--type-${pokemon.types[0].type.name}) 0%, #14152a 100%)">
-            <div class="detail-img">
-                <img src="${pokemon.sprites.other['official-artwork'].front_default}" alt="${pokemon.name}" style="width: 100%; height: 100%; object-fit: contain;">
-            </div>
-        </div>
-        <div class="detail-info">
-            <div class="basic-info">
-                <h1 style="text-transform: capitalize; font-size: 2.5rem; margin-bottom: 1rem;">${pokemon.name}</h1>
-                <div class="card-types" style="justify-content: flex-start; margin-bottom: 2rem;">
-                    ${pokemon.types.map(t => `<span class="badge" style="background-color: var(--type-${t.type.name})">${t.type.name}</span>`).join('')}
-                </div>
-                <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
-                    <div>
-                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Peso</p>
-                        <p style="font-weight: 700; font-size: 1.2rem;">${pokemon.weight / 10} kg</p>
-                    </div>
-                    <div>
-                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Altura</p>
-                        <p style="font-weight: 700; font-size: 1.2rem;">${pokemon.height / 10} m</p>
-                    </div>
-                </div>
-                <div>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Habilidades</p>
-                    <p style="text-transform: capitalize;">${pokemon.abilities.map(a => a.ability.name).join(', ')}</p>
-                </div>
-            </div>
-            <div class="stats-container">
-                <h3>Estadísticas Base</h3>
-                ${pokemon.stats.map(stat => `
-                    <div class="stat-row">
-                        <div class="stat-label">
-                            <span>${stat.stat.name}</span>
-                            <span>${stat.base_stat}</span>
-                        </div>
-                        <div class="stat-bar-bg">
-                            <div class="stat-bar-fill" style="width: ${(stat.base_stat / 255) * 100}%; background-color: var(--type-${pokemon.types[0].type.name})"></div>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-    `;
+    // Determine current list for navigation
+    let activeList = [];
+    if (isSearchMode) {
+        activeList = searchResults;
+    } else if (isFilteredMode) {
+        activeList = filteredPokemonList;
+    } else {
+        activeList = currentPokemonList;
+    }
+
+    // Find current index
+    const currentIndex = activeList.findIndex(p => p.id === pokemon.id || (p.url && p.url.split('/').filter(Boolean).pop() == pokemon.id));
+    
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    
+    // Initial loading state in modal
+    modalBody.innerHTML = `
+        <div class="loader-container">
+            <div class="loader"></div>
+        </div>
+    `;
+
+    // Fetch species data
+    const speciesData = await fetchSpeciesData(pokemon.id);
+    let evolutionData = null;
+    if (speciesData && speciesData.evolution_chain) {
+        evolutionData = await fetchEvolutionChain(speciesData.evolution_chain.url);
+    }
+
+    // Get flavor text (Spanish if available, otherwise English)
+    const flavorEntry = speciesData ? speciesData.flavor_text_entries.find(entry => entry.language.name === 'es') || 
+                       speciesData.flavor_text_entries.find(entry => entry.language.name === 'en') : null;
+    const flavorText = flavorEntry ? flavorEntry.flavor_text.replace(/\f/g, ' ') : 'No hay descripción disponible.';
+
+    // Get genus (Spanish if available, otherwise English)
+    const genusEntry = speciesData ? speciesData.genera.find(g => g.language.name === 'es') || 
+                      speciesData.genera.find(g => g.language.name === 'en') : null;
+    const genus = genusEntry ? genusEntry.genus : '';
+
+    const evolutions = evolutionData ? getEvolutionData(evolutionData) : [];
+    const effectiveness = await fetchTypeEffectiveness(pokemon.types);
+
+    const mainType = pokemon.types[0].type.name;
+    const spriteRegular = pokemon.sprites.other['official-artwork'].front_default;
+
+    modalBody.innerHTML = `
+        <div class="detail-header" style="background: linear-gradient(135deg, var(--type-${mainType}) 0%, #14152a 100%)">
+            <div class="modal-nav">
+                <button id="prev-pokemon" class="nav-btn ${currentIndex <= 0 ? 'disabled' : ''}" ${currentIndex <= 0 ? 'disabled' : ''}>←</button>
+                <div class="header-main-info">
+                    <span class="detail-id">#${String(pokemon.id).padStart(3, '0')}</span>
+                    <h1 class="detail-title">${pokemon.name}</h1>
+                    <p class="detail-genus">${genus}</p>
+                </div>
+                <button id="next-pokemon" class="nav-btn ${currentIndex >= activeList.length - 1 ? 'disabled' : ''}" ${currentIndex >= activeList.length - 1 ? 'disabled' : ''}>→</button>
+            </div>
+            
+            <div class="detail-img-container">
+                <img id="pokemon-main-img" src="${spriteRegular}" alt="${pokemon.name}" class="main-pokemon-img">
+            </div>
+        </div>
+
+        <div class="detail-content">
+            <div class="info-section description-section">
+                <p class="flavor-text">${flavorText}</p>
+                <div class="badge-row">
+                    ${pokemon.types.map(t => `<span class="badge" style="background-color: var(--type-${t.type.name})">${t.type.name}</span>`).join('')}
+                </div>
+                
+                <div class="physical-stats">
+                    <div class="p-stat">
+                        <span class="p-label">Altura</span>
+                        <span class="p-value">${pokemon.height / 10} m</span>
+                    </div>
+                    <div class="p-stat">
+                        <span class="p-label">Peso</span>
+                        <span class="p-value">${pokemon.weight / 10} kg</span>
+                    </div>
+                    <div class="p-stat">
+                        <span class="p-label">Habilidades</span>
+                        <span class="p-value-list">${pokemon.abilities.map(a => `<span class="ability-tag">${a.ability.name}</span>`).join('')}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section effectiveness-section">
+                <h3 class="section-title">Debilidades y Resistencias</h3>
+                <div class="effectiveness-grid">
+                    ${Object.entries(effectiveness)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([type, multiplier]) => `
+                            <div class="eff-item">
+                                <span class="badge" style="background-color: var(--type-${type})">${type}</span>
+                                <span class="multiplier ${multiplier > 1 ? 'weak' : multiplier < 1 ? 'res' : ''}">
+                                    ${multiplier === 0 ? '0' : multiplier}x
+                                </span>
+                            </div>
+                        `).join('')}
+                </div>
+            </div>
+
+            <div class="info-section stats-section">
+                <h3 class="section-title">Estadísticas Base</h3>
+                <div class="stats-grid">
+                    ${pokemon.stats.map(stat => {
+                        const statMap = {
+                            'hp': 'HP',
+                            'attack': 'ATK',
+                            'defense': 'DEF',
+                            'special-attack': 'SPA',
+                            'special-defense': 'SPD',
+                            'speed': 'SPE'
+                        };
+                        return `
+                            <div class="stat-row">
+                                <div class="stat-info">
+                                    <span class="stat-name">${statMap[stat.stat.name] || stat.stat.name}</span>
+                                    <span class="stat-value">${stat.base_stat}</span>
+                                </div>
+                                <div class="stat-bar-wrapper">
+                                    <div class="stat-bar" style="width: ${(stat.base_stat / 255) * 100}%; background: var(--type-${mainType})"></div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+
+            ${evolutions.length > 1 ? `
+            <div class="info-section evolution-section">
+                <h3 class="section-title">Cadena Evolutiva</h3>
+                <div class="evolution-chain">
+                    ${evolutions.map((ev, index) => `
+                        <div class="evo-item" onclick="navigateToPokemon('${ev.id}')">
+                            <div class="evo-img-wrapper">
+                                <img src="${ev.sprite}" alt="${ev.name}">
+                            </div>
+                            <span>${ev.name}</span>
+                        </div>
+                        ${index < evolutions.length - 1 ? '<div class="evo-arrow">→</div>' : ''}
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
+        </div>
+    `;
+
+    const prevBtn = document.getElementById('prev-pokemon');
+    const nextBtn = document.getElementById('next-pokemon');
+
+    if (prevBtn && !prevBtn.disabled) {
+        prevBtn.addEventListener('click', async () => {
+            const prevPokemonData = activeList[currentIndex - 1];
+            const fullData = prevPokemonData.url ? await fetch(prevPokemonData.url).then(res => res.json()) : prevPokemonData;
+            showPokemonDetail(fullData);
+        });
+    }
+
+    if (nextBtn && !nextBtn.disabled) {
+        nextBtn.addEventListener('click', async () => {
+            const nextPokemonData = activeList[currentIndex + 1];
+            const fullData = nextPokemonData.url ? await fetch(nextPokemonData.url).then(res => res.json()) : nextPokemonData;
+            showPokemonDetail(fullData);
+        });
+    }
 }
+
+// Global function to navigate from evolution chain
+window.navigateToPokemon = async (id) => {
+    showLoader();
+    try {
+        const response = await fetch(`${POKE_API_BASE}pokemon/${id}`);
+        const data = await response.json();
+        showPokemonDetail(data);
+    } catch (error) {
+        console.error('Error navigating to pokemon:', error);
+    } finally {
+        hideLoader();
+    }
+};
+
 
 // Event Listeners
 function setupEventListeners() {
@@ -345,6 +554,21 @@ function setupEventListeners() {
             limitMenu.classList.remove('show');
         });
     }
+
+    // Back to top logic
+    const bttBtn = document.getElementById('back-to-top');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 500) {
+            bttBtn.classList.add('show');
+        } else {
+            bttBtn.classList.remove('show');
+        }
+    });
+
+    bttBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
 }
 
 function resetView() {
