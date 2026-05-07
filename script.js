@@ -359,19 +359,28 @@ async function showPokemonDetail(pokemon) {
     const evolutions = evolutionData ? getEvolutionData(evolutionData) : [];
     const effectiveness = await fetchTypeEffectiveness(pokemon.types);
 
+    const varieties = speciesData ? speciesData.varieties.filter(v => !v.is_default) : [];
+    const varietiesData = varieties.map(v => {
+        const vId = v.pokemon.url.split('/').filter(Boolean).pop();
+        const vName = v.pokemon.name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return {
+            id: vId,
+            name: vName,
+            sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${vId}.png`
+        };
+    });
+
     const mainType = pokemon.types[0].type.name;
     const spriteRegular = pokemon.sprites.other['official-artwork'].front_default;
 
     modalBody.innerHTML = `
         <div class="detail-header" style="background: linear-gradient(135deg, var(--type-${mainType}) 0%, #14152a 100%)">
             <div class="modal-nav">
-                <button id="prev-pokemon" class="nav-btn ${currentIndex <= 0 ? 'disabled' : ''}" ${currentIndex <= 0 ? 'disabled' : ''}>←</button>
                 <div class="header-main-info">
                     <span class="detail-id">#${String(pokemon.id).padStart(3, '0')}</span>
                     <h1 class="detail-title">${pokemon.name}</h1>
                     <p class="detail-genus">${genus}</p>
                 </div>
-                <button id="next-pokemon" class="nav-btn ${currentIndex >= activeList.length - 1 ? 'disabled' : ''}" ${currentIndex >= activeList.length - 1 ? 'disabled' : ''}>→</button>
             </div>
             
             <div class="detail-img-container">
@@ -461,27 +470,26 @@ async function showPokemonDetail(pokemon) {
                 </div>
             </div>
             ` : ''}
+
+            ${varietiesData.length > 0 ? `
+            <div class="info-section evolution-section">
+                <h3 class="section-title">Formas Alternativas</h3>
+                <div class="evolution-chain" style="flex-wrap: wrap;">
+                    ${varietiesData.map((v) => `
+                        <div class="evo-item" onclick="navigateToPokemon('${v.id}')">
+                            <div class="evo-img-wrapper">
+                                <img src="${v.sprite}" alt="${v.name}" onerror="if(!this.dataset.fallback){this.dataset.fallback=true; this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${v.id}.png';}">
+                            </div>
+                            <span style="font-size: 0.8rem; margin-top: 0.5rem; display: block;">${v.name}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
         </div>
     `;
 
-    const prevBtn = document.getElementById('prev-pokemon');
-    const nextBtn = document.getElementById('next-pokemon');
 
-    if (prevBtn && !prevBtn.disabled) {
-        prevBtn.addEventListener('click', async () => {
-            const prevPokemonData = activeList[currentIndex - 1];
-            const fullData = prevPokemonData.url ? await fetch(prevPokemonData.url).then(res => res.json()) : prevPokemonData;
-            showPokemonDetail(fullData);
-        });
-    }
-
-    if (nextBtn && !nextBtn.disabled) {
-        nextBtn.addEventListener('click', async () => {
-            const nextPokemonData = activeList[currentIndex + 1];
-            const fullData = nextPokemonData.url ? await fetch(nextPokemonData.url).then(res => res.json()) : nextPokemonData;
-            showPokemonDetail(fullData);
-        });
-    }
 }
 
 // Global function to navigate from evolution chain
