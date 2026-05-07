@@ -278,11 +278,11 @@ h1#main-title span {
     background: var(--bg-card);
     border: 1px solid var(--glass-border);
     color: var(--text-primary);
-    width: 60px;
-    height: 52px;
+    width: 72px;
+    height: 56px;
     border-radius: 18px;
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 1.4rem;
     font-weight: 800;
     transition: var(--transition);
     display: flex;
@@ -315,7 +315,8 @@ h1#main-title span {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
-    min-width: 100px;
+    min-width: 100%;
+    width: 100%;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
     opacity: 0;
     visibility: hidden;
@@ -337,9 +338,10 @@ h1#main-title span {
     padding: 0.8rem 1rem;
     border-radius: 12px;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 700;
     transition: var(--transition);
     text-align: center;
+    font-size: 1.2rem;
 }
 
 .limit-option:hover {
@@ -371,34 +373,107 @@ h1#main-title span {
     animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.type-filters-wrapper {
-    max-height: 0;
-    overflow: hidden;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 0;
-    transform: translateY(-10px) scale(0.95);
-    background: rgba(20, 21, 42, 0.6);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-radius: 30px;
-    padding: 0;
-    margin: 0 auto;
-    max-width: 900px;
+/* Type Dropdown Styles */
+.type-dropdown {
+    position: relative;
+    display: flex;
+    flex: 1;
 }
 
-.type-filters-wrapper.open {
-    max-height: 800px;
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    padding: 2.5rem;
-    margin-bottom: 3rem;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+.type-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    background: rgba(20, 21, 42, 0.98);
+    backdrop-filter: blur(30px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 100%;
+    width: 100%;
+    max-height: 450px;
+    overflow-y: auto;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 300;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
 }
+
+.type-menu::-webkit-scrollbar {
+    width: 5px;
+}
+
+.type-menu::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 10px;
+}
+
+.type-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.type-option {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 0.8rem 1.2rem;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-transform: capitalize;
+    font-size: 0.95rem;
+}
+
+.type-option:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    padding-left: 1.5rem;
+}
+
+.type-option.active {
+    background: var(--type-color, var(--accent));
+    color: white;
+    box-shadow: 0 5px 15px var(--type-glow, var(--accent-glow));
+}
+
+/* Reuse type colors for dropdown options */
+.type-option[data-type="fire"].active { --type-color: var(--type-fire); --type-glow: rgba(240, 128, 48, 0.4); }
+.type-option[data-type="water"].active { --type-color: var(--type-water); --type-glow: rgba(104, 144, 240, 0.4); }
+.type-option[data-type="grass"].active { --type-color: var(--type-grass); --type-glow: rgba(120, 200, 80, 0.4); }
+.type-option[data-type="electric"].active { --type-color: var(--type-electric); --type-glow: rgba(248, 208, 48, 0.4); }
+.type-option[data-type="ice"].active { --type-color: var(--type-ice); --type-glow: rgba(152, 216, 216, 0.4); }
+.type-option[data-type="fighting"].active { --type-color: var(--type-fighting); --type-glow: rgba(192, 48, 40, 0.4); }
+.type-option[data-type="poison"].active { --type-color: var(--type-poison); --type-glow: rgba(160, 64, 160, 0.4); }
+.type-option[data-type="ground"].active { --type-color: var(--type-ground); --type-glow: rgba(224, 192, 104, 0.4); }
+.type-option[data-type="flying"].active { --type-color: var(--type-flying); --type-glow: rgba(168, 144, 240, 0.4); }
+.type-option[data-type="psychic"].active { --type-color: var(--type-psychic); --type-glow: rgba(248, 88, 136, 0.4); }
+.type-option[data-type="bug"].active { --type-color: var(--type-bug); --type-glow: rgba(168, 184, 32, 0.4); }
+.type-option[data-type="rock"].active { --type-color: var(--type-rock); --type-glow: rgba(184, 160, 56, 0.4); }
+.type-option[data-type="ghost"].active { --type-color: var(--type-ghost); --type-glow: rgba(112, 88, 152, 0.4); }
+.type-option[data-type="dragon"].active { --type-color: var(--type-dragon); --type-glow: rgba(112, 56, 248, 0.4); }
+.type-option[data-type="dark"].active { --type-color: var(--type-dark); --type-glow: rgba(112, 88, 72, 0.4); }
+.type-option[data-type="steel"].active { --type-color: var(--type-steel); --type-glow: rgba(184, 184, 208, 0.4); }
+.type-option[data-type="fairy"].active { --type-color: var(--type-fairy); --type-glow: rgba(238, 153, 172, 0.4); }
 
 @keyframes popIn {
     from { transform: scale(0); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
 }
+
 
 /* Pokemon Grid */
 .pokemon-grid {
@@ -826,9 +901,9 @@ h1#main-title span {
     background: var(--accent);
     color: white;
     border: none;
-    padding: 1.2rem 3rem;
+    padding: 1.4rem 4rem;
     border-radius: 20px;
-    font-size: 1.1rem;
+    font-size: 1.4rem;
     font-weight: 700;
     cursor: pointer;
     transition: var(--transition);
@@ -939,9 +1014,10 @@ h1#main-title span {
     }
 
     .limit-btn {
-        width: 52px !important; /* Make it square-ish on mobile for space */
-        height: 52px !important;
+        width: 60px !important; 
+        height: 60px !important;
         border-radius: 16px !important;
+        font-size: 1.3rem !important;
     }
 
     .detail-content {

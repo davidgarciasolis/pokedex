@@ -31,10 +31,16 @@
                     
                     <div class="filters-row">
                         <div class="filter-controls">
-                            <button id="filter-toggle" class="btn-secondary">
-                                <span class="icon">🏷️</span> <span class="btn-text">Tipos</span> <span class="arrow">▼</span>
-                                <div id="active-filters-count" class="badge-count" style="display: none;">0</div>
-                            </button>
+                            <div class="type-dropdown">
+                                <button id="type-dropdown-toggle" class="btn-secondary">
+                                    <span class="icon">🏷️</span> <span class="btn-text">Tipos</span> <span class="arrow">▼</span>
+                                    <div id="active-filters-count" class="badge-count" style="display: none;">0</div>
+                                </button>
+                                <div id="type-options-menu" class="type-menu">
+                                    <!-- Types will be injected here -->
+                                    <button class="type-option active" data-type="all">Todos</button>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="limit-controls">
@@ -50,12 +56,7 @@
                     </div>
                 </div>
 
-                <div id="type-filters-container" class="type-filters-wrapper">
-                    <div id="type-filters" class="type-chips">
-                        <!-- Types will be injected here -->
-                        <button class="type-chip active" data-type="all">Todos</button>
-                    </div>
-                </div>
+
             </div>
         </header>
 

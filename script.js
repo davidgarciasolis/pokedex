@@ -20,9 +20,8 @@ const loadMoreBtn = document.getElementById('load-more');
 const modal = document.getElementById('pokemon-modal');
 const modalBody = document.getElementById('modal-body');
 const closeModal = document.querySelector('.close-modal');
-const typeFiltersContainer = document.getElementById('type-filters');
-const filterToggleBtn = document.getElementById('filter-toggle');
-const typeFiltersWrapper = document.getElementById('type-filters-container');
+const typeFiltersContainer = document.getElementById('type-options-menu');
+const filterToggleBtn = document.getElementById('type-dropdown-toggle');
 const activeFiltersCount = document.getElementById('active-filters-count');
 
 // Initialize
@@ -58,16 +57,24 @@ async function fetchTypes() {
 function renderTypeFilters() {
     allTypes.forEach(type => {
         const button = document.createElement('button');
-        button.className = 'type-chip';
+        button.className = 'type-option';
         button.dataset.type = type.name;
         button.textContent = type.name;
-        button.addEventListener('click', () => toggleTypeFilter(type.name, button));
+        button.addEventListener('click', (e) => {
+            e.stopPropagation(); // Keep menu open
+            toggleTypeFilter(type.name, button);
+        });
         typeFiltersContainer.appendChild(button);
     });
 
     // All button logic
     const allBtn = document.querySelector('[data-type="all"]');
-    allBtn.addEventListener('click', () => resetFilters());
+    if (allBtn) {
+        allBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Keep menu open
+            resetFilters();
+        });
+    }
 }
 
 async function toggleTypeFilter(type, button) {
@@ -93,8 +100,9 @@ async function toggleTypeFilter(type, button) {
 
 function resetFilters() {
     selectedTypes = [];
-    document.querySelectorAll('.type-chip').forEach(btn => btn.classList.remove('active'));
-    document.querySelector('[data-type="all"]').classList.add('active');
+    document.querySelectorAll('.type-option').forEach(btn => btn.classList.remove('active'));
+    const allBtn = document.querySelector('[data-type="all"]');
+    if (allBtn) allBtn.classList.add('active');
     updateFilterCount();
     applyFilters();
 }
@@ -500,10 +508,26 @@ function setupEventListeners() {
         }
     });
 
-    filterToggleBtn.addEventListener('click', () => {
-        typeFiltersWrapper.classList.toggle('open');
-        filterToggleBtn.classList.toggle('open');
-    });
+    // Type dropdown logic
+    const typeMenu = document.getElementById('type-options-menu');
+    if (filterToggleBtn && typeMenu) {
+        filterToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            typeMenu.classList.toggle('show');
+            filterToggleBtn.classList.toggle('open');
+            // Close limit menu if open
+            const limitMenu = document.getElementById('limit-options-menu');
+            if (limitMenu) limitMenu.classList.remove('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!typeMenu.contains(e.target) && !filterToggleBtn.contains(e.target)) {
+                typeMenu.classList.remove('show');
+                filterToggleBtn.classList.remove('open');
+            }
+        });
+    }
     
     closeModal.addEventListener('click', () => {
         modal.classList.remove('active');
@@ -534,6 +558,11 @@ function setupEventListeners() {
         limitBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             limitMenu.classList.toggle('show');
+            // Close type menu if open
+            if (typeMenu) {
+                typeMenu.classList.remove('show');
+                filterToggleBtn.classList.remove('open');
+            }
         });
 
         limitOptions.forEach(option => {
