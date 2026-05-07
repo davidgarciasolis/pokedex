@@ -155,6 +155,9 @@ async function applyFilters() {
         
         if (searchInput.value.trim()) {
             handleSearch(searchInput.value.toLowerCase().trim());
+        } else if (filteredPokemonList.length === 0) {
+            pokemonGrid.innerHTML = `<div class="no-results-message" style="grid-column: 1 / -1; text-align: center; padding: 3rem; font-size: 1.2rem; color: var(--text-secondary);"><p>No se encontró ningún Pokémon con los tipos seleccionados.</p></div>`;
+            loadMoreBtn.style.display = 'none';
         } else {
             await fetchFilteredPokemonPage();
         }
@@ -646,7 +649,7 @@ async function handleSearch(query) {
     );
 
     if (searchResults.length === 0) {
-        pokemonGrid.innerHTML = `<div class="loader-container"><p>No se encontró ningún Pokémon que coincida con "${query}".</p></div>`;
+        pokemonGrid.innerHTML = `<div class="no-results-message" style="grid-column: 1 / -1; text-align: center; padding: 3rem; font-size: 1.2rem; color: var(--text-secondary);"><p>No se encontró ningún Pokémon que coincida con "${query}".</p></div>`;
         loadMoreBtn.style.display = 'none';
         hideLoader();
     } else {
