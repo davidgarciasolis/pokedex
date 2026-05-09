@@ -1068,6 +1068,37 @@ h1#main-title span {
         right: 1rem;
         font-size: 2rem;
     }
+
+    .evolution-chain {
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding: 1.5rem 1rem;
+        -webkit-overflow-scrolling: touch;
+        gap: 1rem;
+    }
+
+    .evolution-chain::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .evolution-chain::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+    }
+
+    .evolution-chain::-webkit-scrollbar-thumb {
+        background: var(--accent);
+        border-radius: 10px;
+    }
+
+    .evo-item {
+        flex: 0 0 auto;
+    }
+
+    .evo-arrow {
+        flex: 0 0 auto;
+    }
     
     h1#main-title {
         font-size: 3rem;
