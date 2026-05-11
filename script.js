@@ -243,9 +243,9 @@ function renderPokemon(pokemonList) {
 
 // Show Detail Modal
 // Fetch Species Data (Flavor Text, Genus, Evolution Chain Link)
-async function fetchSpeciesData(id) {
+async function fetchSpeciesData(url) {
     try {
-        const response = await fetch(`${POKE_API_BASE}pokemon-species/${id}`);
+        const response = await fetch(url);
         return await response.json();
     } catch (error) {
         console.error('Error fetching species data:', error);
@@ -339,8 +339,8 @@ async function showPokemonDetail(pokemon) {
         </div>
     `;
 
-    // Fetch species data
-    const speciesData = await fetchSpeciesData(pokemon.id);
+    // Fetch species data using species URL (needed for alternative forms)
+    const speciesData = await fetchSpeciesData(pokemon.species.url);
     let evolutionData = null;
     if (speciesData && speciesData.evolution_chain) {
         evolutionData = await fetchEvolutionChain(speciesData.evolution_chain.url);
@@ -359,7 +359,7 @@ async function showPokemonDetail(pokemon) {
     const evolutions = evolutionData ? getEvolutionData(evolutionData) : [];
     const effectiveness = await fetchTypeEffectiveness(pokemon.types);
 
-    const varieties = speciesData ? speciesData.varieties.filter(v => !v.is_default) : [];
+    const varieties = speciesData ? speciesData.varieties.filter(v => v.pokemon.name !== pokemon.name) : [];
     const varietiesData = varieties.map(v => {
         const vId = v.pokemon.url.split('/').filter(Boolean).pop();
         const vName = v.pokemon.name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
