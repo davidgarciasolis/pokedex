@@ -314,6 +314,26 @@ async function fetchTypeEffectiveness(types) {
     return effectiveness;
 }
 
+// Play Pokemon Cry
+async function playPokemonCry(pokemon, button = null) {
+    if (!pokemon.cries || !pokemon.cries.latest) return;
+    
+    try {
+        const audio = new Audio(pokemon.cries.latest);
+        audio.volume = 0.5;
+        
+        if (button) {
+            button.classList.add('playing');
+            audio.onended = () => button.classList.remove('playing');
+        }
+        
+        await audio.play();
+    } catch (error) {
+        console.error('Error playing pokemon cry:', error);
+        if (button) button.classList.remove('playing');
+    }
+}
+
 // Show Detail Modal
 async function showPokemonDetail(pokemon) {
     // Determine current list for navigation
@@ -383,7 +403,7 @@ async function showPokemonDetail(pokemon) {
                 </div>
             </div>
             
-            <div class="detail-img-container">
+            <div class="detail-img-container" id="main-img-container" title="Haz clic para escuchar su grito">
                 <img id="pokemon-main-img" src="${spriteRegular}" alt="${pokemon.name}" class="main-pokemon-img">
             </div>
         </div>
@@ -489,7 +509,11 @@ async function showPokemonDetail(pokemon) {
         </div>
     `;
 
-
+    // Setup cry trigger (removed auto-play per user request)
+    const imgContainer = document.getElementById('main-img-container');
+    if (imgContainer) {
+        imgContainer.addEventListener('click', () => playPokemonCry(pokemon, imgContainer));
+    }
 }
 
 // Global function to navigate from evolution chain
