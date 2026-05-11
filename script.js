@@ -135,24 +135,24 @@ async function applyFilters() {
     showLoader();
     pokemonGrid.innerHTML = '';
     filteredOffset = 0;
-
+    
     try {
         // Fetch all pokemon for each selected type
-        const typeDataPromises = selectedTypes.map(type =>
+        const typeDataPromises = selectedTypes.map(type => 
             fetch(`${POKE_API_BASE}type/${type}`).then(res => res.json())
         );
         const typesData = await Promise.all(typeDataPromises);
 
         // Find intersection of pokemon URLs
         let intersectedPokemon = typesData[0].pokemon.map(p => p.pokemon);
-
+        
         for (let i = 1; i < typesData.length; i++) {
             const currentTypePokemonUrls = new Set(typesData[i].pokemon.map(p => p.pokemon.url));
             intersectedPokemon = intersectedPokemon.filter(p => currentTypePokemonUrls.has(p.url));
         }
 
         filteredPokemonList = intersectedPokemon;
-
+        
         if (searchInput.value.trim()) {
             handleSearch(searchInput.value.toLowerCase().trim());
         } else if (filteredPokemonList.length === 0) {
@@ -171,7 +171,7 @@ async function applyFilters() {
 async function fetchFilteredPokemonPage() {
     showLoader();
     const page = filteredPokemonList.slice(filteredOffset, filteredOffset + currentLimit);
-
+    
     try {
         const detailedPokemon = await Promise.all(
             page.map(async (pokemon) => {
@@ -179,10 +179,10 @@ async function fetchFilteredPokemonPage() {
                 return await res.json();
             })
         );
-
+        
         renderPokemon(detailedPokemon);
         filteredOffset += currentLimit;
-
+        
         if (filteredOffset >= filteredPokemonList.length) {
             loadMoreBtn.style.display = 'none';
         } else {
@@ -202,14 +202,14 @@ async function fetchPokemon(isSearching = false) {
         try {
             const response = await fetch(`${POKE_API_BASE}pokemon?limit=${currentLimit}&offset=${offset}`);
             const data = await response.json();
-
+            
             const detailedPokemon = await Promise.all(
                 data.results.map(async (pokemon) => {
                     const res = await fetch(pokemon.url);
                     return await res.json();
                 })
             );
-
+            
             currentPokemonList = [...currentPokemonList, ...detailedPokemon];
             renderPokemon(detailedPokemon);
             offset += currentLimit;
@@ -272,7 +272,7 @@ function getEvolutionData(evolution) {
     function extractEvolutions(node) {
         const speciesName = node.species.name;
         const speciesId = node.species.url.split('/').filter(Boolean).pop();
-
+        
         evolutions.push({
             name: speciesName,
             id: speciesId,
@@ -328,10 +328,10 @@ async function showPokemonDetail(pokemon) {
 
     // Find current index
     const currentIndex = activeList.findIndex(p => p.id === pokemon.id || (p.url && p.url.split('/').filter(Boolean).pop() == pokemon.id));
-
+    
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
-
+    
     // Initial loading state in modal
     modalBody.innerHTML = `
         <div class="loader-container">
@@ -347,13 +347,13 @@ async function showPokemonDetail(pokemon) {
     }
 
     // Get flavor text (Spanish if available, otherwise English)
-    const flavorEntry = speciesData ? speciesData.flavor_text_entries.find(entry => entry.language.name === 'es') ||
-        speciesData.flavor_text_entries.find(entry => entry.language.name === 'en') : null;
+    const flavorEntry = speciesData ? speciesData.flavor_text_entries.find(entry => entry.language.name === 'es') || 
+                       speciesData.flavor_text_entries.find(entry => entry.language.name === 'en') : null;
     const flavorText = flavorEntry ? flavorEntry.flavor_text.replace(/\f/g, ' ') : 'No hay descripción disponible.';
 
     // Get genus (Spanish if available, otherwise English)
-    const genusEntry = speciesData ? speciesData.genera.find(g => g.language.name === 'es') ||
-        speciesData.genera.find(g => g.language.name === 'en') : null;
+    const genusEntry = speciesData ? speciesData.genera.find(g => g.language.name === 'es') || 
+                      speciesData.genera.find(g => g.language.name === 'en') : null;
     const genus = genusEntry ? genusEntry.genus : '';
 
     const evolutions = evolutionData ? getEvolutionData(evolutionData) : [];
@@ -415,8 +415,8 @@ async function showPokemonDetail(pokemon) {
                 <h3 class="section-title">Debilidades y Resistencias</h3>
                 <div class="effectiveness-grid">
                     ${Object.entries(effectiveness)
-            .sort((a, b) => b[1] - a[1])
-            .map(([type, multiplier]) => `
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([type, multiplier]) => `
                             <div class="eff-item">
                                 <span class="badge" style="background-color: var(--type-${type})">${type}</span>
                                 <span class="multiplier ${multiplier > 1 ? 'weak' : multiplier < 1 ? 'res' : ''}">
@@ -431,15 +431,15 @@ async function showPokemonDetail(pokemon) {
                 <h3 class="section-title">Estadísticas Base</h3>
                 <div class="stats-grid">
                     ${pokemon.stats.map(stat => {
-                const statMap = {
-                    'hp': 'HP',
-                    'attack': 'ATK',
-                    'defense': 'DEF',
-                    'special-attack': 'SPA',
-                    'special-defense': 'SPD',
-                    'speed': 'SPE'
-                };
-                return `
+                        const statMap = {
+                            'hp': 'HP',
+                            'attack': 'ATK',
+                            'defense': 'DEF',
+                            'special-attack': 'SPA',
+                            'special-defense': 'SPD',
+                            'speed': 'SPE'
+                        };
+                        return `
                             <div class="stat-row">
                                 <div class="stat-info">
                                     <span class="stat-name">${statMap[stat.stat.name] || stat.stat.name}</span>
@@ -450,7 +450,7 @@ async function showPokemonDetail(pokemon) {
                                 </div>
                             </div>
                         `;
-            }).join('')}
+                    }).join('')}
                 </div>
             </div>
 
@@ -539,12 +539,12 @@ function setupEventListeners() {
             }
         });
     }
-
+    
     closeModal.addEventListener('click', () => {
         modal.classList.remove('active');
         document.body.style.overflow = 'auto';
     });
-
+    
     modal.querySelector('.modal-overlay').addEventListener('click', () => {
         modal.classList.remove('active');
         document.body.style.overflow = 'auto';
@@ -580,10 +580,10 @@ function setupEventListeners() {
             option.addEventListener('click', () => {
                 currentLimit = parseInt(option.dataset.limit);
                 limitBtn.textContent = currentLimit;
-
+                
                 limitOptions.forEach(opt => opt.classList.remove('active'));
                 option.classList.add('active');
-
+                
                 limitMenu.classList.remove('show');
                 resetView();
             });
@@ -618,7 +618,7 @@ function resetView() {
     searchOffset = 0;
     currentPokemonList = [];
     pokemonGrid.innerHTML = '';
-
+    
     if (isSearchMode) {
         handleSearch(searchInput.value.toLowerCase().trim());
     } else if (isFilteredMode) {
@@ -652,7 +652,7 @@ async function handleSearch(query) {
     const listToFilter = isFilteredMode ? filteredPokemonList : allPokemonMasterList;
 
     // Filter list for partial matches
-    searchResults = listToFilter.filter(pokemon =>
+    searchResults = listToFilter.filter(pokemon => 
         pokemon.name.includes(query) || pokemon.url.split('/').filter(Boolean).pop() === query
     );
 
@@ -668,7 +668,7 @@ async function handleSearch(query) {
 async function fetchSearchPokemonPage() {
     showLoader();
     const page = searchResults.slice(searchOffset, searchOffset + currentLimit);
-
+    
     try {
         const detailedPokemon = await Promise.all(
             page.map(async (pokemon) => {
@@ -676,10 +676,10 @@ async function fetchSearchPokemonPage() {
                 return await res.json();
             })
         );
-
+        
         renderPokemon(detailedPokemon);
         searchOffset += currentLimit;
-
+        
         if (searchOffset >= searchResults.length) {
             loadMoreBtn.style.display = 'none';
         } else {
